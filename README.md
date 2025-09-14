@@ -1,69 +1,68 @@
-# React + TypeScript + Vite
+# 🎨 LangPad – Learn Chinese Characters Interactively
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![React](https://img.shields.io/badge/React-18-blue?logo=react)](https://reactjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-4.9-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/TailwindCSS-3.3-blue?logo=tailwind-css)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](https://opensource.org/licenses/MIT)
 
-Currently, two official plugins are available:
+Welcome to **LangPad**, an interactive platform for learning Chinese characters with stroke order animations, practice sessions, and a growing character library.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## Expanding the ESLint configuration
+## 🌟 Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Interactive Drawing Pad** ✍️  
+  Practice writing Chinese characters with real-time stroke order guidance.
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+- **Stroke Order Animations** 🔄  
+  Learn the proper order of strokes with smooth, animated guidance.
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+- **Character Library** 📚  
+  Browse, search, and filter thousands of Chinese characters by difficulty, category, or stroke count.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- **Save Your Progress** 💾  
+  Keep track of your practiced characters with saved drawings and scores.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **Audio Pronunciation** 🔊  
+  Hear the correct pronunciation for each character.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- **Responsive Design** 📱💻  
+  Works seamlessly on desktop, tablet, and mobile devices.
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+---
+
+## 🖼️ Screenshots
+
+<div align="center">
+  <img src="screenshots/home.png" alt="Home Screen" width="300" style="margin:5px;" />
+  <img src="screenshots/library.png" alt="Character Library" width="300" style="margin:5px;" />
+  <img src="screenshots/drawing-pad.png" alt="Drawing Pad" width="300" style="margin:5px;" />
+  <img src="screenshots/saved.png" alt="Saved Characters" width="300" style="margin:5px;" />
+</div>
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js >= 18.x  
+- npm or yarn  
+- Modern browser (Chrome, Edge, Firefox, Safari)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/langpad.git
+cd langpad
+
+# Install dependencies
+npm install
+
+npm start
+# or
+yarn start
+
+# or
+yarn install
