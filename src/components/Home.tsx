@@ -14,7 +14,7 @@ const Home: React.FC<HomeProps> = ({ setCurrentView }) => {
         Welcome to LangPad!
       </h1>
       <p className="text-gray-600 mb-6">
-        Learn Chinese characters through fun stroke order animations and practice.
+        Learn Chinese characters through fun stroke order animations and practice for the very first time!
       </p>
 
       {/* Decorative Chinese-themed images */}
