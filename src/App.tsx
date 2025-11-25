@@ -1,54 +1,20 @@
-// src/App.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Navigation from "./components/Navigation";
+import Home from "./components/Home";
 import CharacterLibrary from "./components/CharacterLibrary";
 import DrawingPad from "./components/DrawingPad";
 import SavedCharacters from "./components/SavedCharacters";
-import type { Character, SavedCharacter, ViewType } from "./types/index";
-import Home from "./components/Home";
+import { ALL_CHARACTERS } from "./MandarinData";
+import type { Character, SavedCharacter, ViewType } from "./types";
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>("home");
-  const [characters, setCharacters] = useState<Character[]>([]);
+  const [characters] = useState<Character[]>(ALL_CHARACTERS);
   const [savedCharacters, setSavedCharacters] = useState<SavedCharacter[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
 
-  // ✅ Fetch characters from Hanitizer API
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      try {
-        setLoading(true);
+  // REMOVED localStorage - now using in-memory state only
 
-        const res = await fetch("https://api.hanitizer.com/characters?hsk=1");
-        const data = await res.json();
-
-        // Map API data to our `Character` type
-        const mapped: Character[] = data.map((item: any) => ({
-          id: item.id.toString(),
-          character: item.character,
-          pinyin: item.pinyin,
-          meaning: item.definition,
-          english: item.definition_en ?? item.definition,
-          strokes: item.strokes ?? 0,
-          difficulty: "beginner",
-          category: item.hskLevel ? `hsk${item.hskLevel}` : "general",
-          radical: item.radical ?? "",
-          frequency: item.frequency ?? 9999,
-        }));
-
-        setCharacters(mapped);
-      } catch (err) {
-        console.error("Error fetching characters:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCharacters();
-  }, []);
-
-  // ✅ Save a practiced character
   const saveCharacter = (character: Character, drawing: string) => {
     const saved: SavedCharacter = {
       ...character,
@@ -56,50 +22,59 @@ const App: React.FC = () => {
       savedAt: new Date().toISOString(),
       practiceCount: 1,
     };
-    setSavedCharacters((prev) => [...prev, saved]);
+    setSavedCharacters(prev => [...prev, saved]);
     setCurrentView("saved");
   };
 
-  // ✅ Select a character and open DrawingPad
   const selectCharacterForPractice = (character: Character) => {
     setSelectedCharacter(character);
     setCurrentView("draw");
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
-      {/* Navigation bar */}
-      <Navigation currentView={currentView} onViewChange={setCurrentView} />
+  <div className="flex flex-col min-h-screen bg-gray-900 text-white">
+  
+    {/* Header Label */}
+    <header className="p-4 bg-gray-800 text-xl font-semibold text-center">
+      {currentView === "library" && "Character Library"}
+      {currentView === "draw" && selectedCharacter && `Practice: ${selectedCharacter.character}`}
+      {currentView === "saved" && "Saved Characters"}
+      {currentView === "home" && "Welcome"}
+    </header>
 
-      {/* Main content */}
-      <main className="flex-1 overflow-auto p-4">
-        {currentView === "home" && <Home setCurrentView={setCurrentView} />}
+    {/* Main screen content */}
+    <main className="flex-1 p-4 pb-24"> 
+      {currentView === "home" && (
+        <Home onStart={() => setCurrentView("library")} />
+      )}
+      {currentView === "library" && (
+  <CharacterLibrary
+    onSelectCharacter={selectCharacterForPractice}
+  />
+)}
+      {currentView === "draw" && selectedCharacter && (
+        <DrawingPad
+          selectedCharacter={selectedCharacter}
+          onSaveCharacter={saveCharacter}
+          onSelectNewCharacter={() => setCurrentView("library")}
+        />
+      )}
+      {currentView === "saved" && (
+        <SavedCharacters
+          savedCharacters={savedCharacters}
+          onSelectCharacter={selectCharacterForPractice}
+        />
+      )}
+    </main>
 
-        {currentView === "library" && (
-          <CharacterLibrary
-            characters={characters}
-            loading={loading}
-            onSelectCharacter={selectCharacterForPractice}
-          />
-        )}
+    {/* Fixed Bottom Navigation */}
+    <Navigation
+      currentView={currentView}
+      onViewChange={setCurrentView}
+    />
+  </div>
+);
 
-        {currentView === "draw" && selectedCharacter && (
-          <DrawingPad
-            selectedCharacter={selectedCharacter}
-            onSaveCharacter={saveCharacter}
-            onSelectNewCharacter={() => setCurrentView("library")}
-          />
-        )}
-
-        {currentView === "saved" && (
-          <SavedCharacters
-            savedCharacters={savedCharacters}
-            onSelectCharacter={selectCharacterForPractice}
-          />
-        )}
-      </main>
-    </div>
-  );
 };
 
 export default App;

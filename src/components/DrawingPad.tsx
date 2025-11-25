@@ -1,247 +1,199 @@
-// components/DrawingPad.tsx - Interactive Drawing Canvas with Hanzi Writer
-import React, { useEffect, useRef, useState } from 'react';
-import { Play, RotateCcw, Save, Shuffle, Volume2, Info, Target } from 'lucide-react';
-import type { DrawingPadProps } from '../types';
-import HanziWriter from 'hanzi-writer';
+import React, { useRef, useEffect, useState } from "react";
+import type { Character, DrawingPadProps } from "../types";
 
-const DrawingPad: React.FC<DrawingPadProps> = ({
-  selectedCharacter,
-  onSaveCharacter,
-  onSelectNewCharacter
+const DrawingPad: React.FC<DrawingPadProps> = ({ 
+  selectedCharacter, 
+  onSaveCharacter, 
+  onSelectNewCharacter 
 }) => {
-  const displayRef = useRef<HTMLDivElement>(null);
-  const practiceRef = useRef<HTMLDivElement>(null);
-  const writerRef = useRef<HanziWriter | null>(null);
-  const quizRef = useRef<HanziWriter | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isPracticing, setIsPracticing] = useState(false);
-  const [animationSpeed, setAnimationSpeed] = useState(1);
-  const [practiceScore, setPracticeScore] = useState<number | null>(null);
-
-  // Initialize Hanzi Writer when character changes
   useEffect(() => {
-    if (!selectedCharacter) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    const char = selectedCharacter.character;
+    canvas.width = 360;
+    canvas.height = 360;
+    ctx.lineWidth = 6;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = "#111";
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }, [selectedCharacter]);
 
-    if (displayRef.current) {
-      writerRef.current = HanziWriter.create(displayRef.current, char, {
-        width: 300,
-        height: 300,
-        padding: 20,
-        strokeAnimationSpeed: animationSpeed,
-        delayBetweenStrokes: 300,
-        strokeColor: '#2563eb',
-        outlineColor: '#e5e7eb',
-        showOutline: true,
-      });
-    }
-
-    if (practiceRef.current) {
-      quizRef.current = HanziWriter.create(practiceRef.current, char, {
-        width: 300,
-        height: 300,
-        padding: 20,
-        strokeColor: '#059669',
-        outlineColor: '#e5e7eb',
-        showOutline: true,
-        showCharacter: false,
-        showHintAfterMisses: 2,
-      });
-    }
-  }, [selectedCharacter, animationSpeed]);
-
-  // Animate stroke order
-  const startAnimation = () => {
-    if (!writerRef.current || isAnimating) return;
-
-    setIsAnimating(true);
-    writerRef.current.animateCharacter({
-      onComplete: () => setIsAnimating(false),
-    });
+  const getPointer = (e: any) => {
+    const canvas = canvasRef.current!;
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.touches?.[0]?.clientX ?? e.clientX) - rect.left;
+    const y = (e.touches?.[0]?.clientY ?? e.clientY) - rect.top;
+    return { x, y };
   };
 
-  // Start practice mode
-  const startPractice = () => {
-    if (!quizRef.current || isPracticing) return;
-
-    setIsPracticing(true);
-    setPracticeScore(null);
-
-    quizRef.current.quiz({
-      onComplete: (summary: any) => {
-        setIsPracticing(false);
-        const { totalMistakes, totalStrokes } = summary;
-        const accuracy = Math.round(
-          100 - (totalMistakes / totalStrokes) * 100
-        );
-        setPracticeScore(Math.max(0, accuracy));
-      },
-    });
+  const start = (e: any) => {
+    setIsDrawing(true);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const p = getPointer(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
   };
 
-  // Reset practice canvas
-  const resetPractice = () => {
-    if (quizRef.current) {
-      quizRef.current.cancelQuiz();
-    }
-    setIsPracticing(false);
-    setPracticeScore(null);
+  const move = (e: any) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    const p = getPointer(e);
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
   };
 
-  // Save character drawing (placeholder - captures SVG instead of PNG here)
-  const saveDrawing = () => {
-    if (!selectedCharacter) return;
-    const drawingData = `saved-${selectedCharacter.character}`;
-    onSaveCharacter(selectedCharacter, drawingData);
-    alert('Character saved successfully!');
+  const end = () => {
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    ctx?.beginPath();
   };
 
-  // Play pronunciation
-  const playPronunciation = () => {
-    if (!selectedCharacter) return;
-    if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(selectedCharacter.character);
-      utterance.lang = 'zh-CN';
-      speechSynthesis.speak(utterance);
-    }
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  };
+
+  const save = async () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    const data = canvas.toDataURL("image/png");
+    onSaveCharacter(selectedCharacter, data);
+    setIsSaving(false);
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Practice Drawing</h1>
-        <p className="text-gray-600">Learn proper stroke order and practice writing</p>
-      </div>
-
-      {/* Character Info */}
-      {selectedCharacter && (
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center space-x-6">
-            <div className="text-6xl font-bold text-gray-800">
-              {selectedCharacter.character}
+    <div className="min-h-screen bg-blue-950 py-12 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header Card */}
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 mb-8 transform transition-all duration-300 hover:shadow-3xl">
+          <div className="text-center space-y-4">
+            <div className="inline-block">
+              <div className="text-8xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent animate-pulse">
+                {selectedCharacter.character}
+              </div>
             </div>
-            <div className="space-y-1">
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-500">Pinyin:</span>
-                <span className="text-lg text-blue-600">{selectedCharacter.pinyin}</span>
-                <button
-                  onClick={playPronunciation}
-                  className="p-1 hover:bg-gray-200 rounded"
-                >
-                  <Volume2 className="w-4 h-4 text-gray-500" />
-                </button>
-              </div>
-              <div className="flex items-center space-x-2">
-                <span className="text-sm font-medium text-gray-500">Meaning:</span>
-                <span className="text-gray-700">{selectedCharacter.meaning}</span>
-              </div>
+            <div className="flex items-center justify-center gap-3 text-gray-600">
+              <span className="px-4 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                {selectedCharacter.pinyin}
+              </span>
+              <span className="text-gray-400">•</span>
+              <span className="px-4 py-1.5 bg-red-100 text-red-700 rounded-full text-sm font-medium">
+                {selectedCharacter.meaning}
+              </span>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Drawing Interface */}
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Stroke Order Display */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-gray-800">Stroke Order Guide</h3>
-            <button
-              onClick={startAnimation}
-              disabled={isAnimating}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                isAnimating
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-green-600 text-white hover:bg-green-700'
-              }`}
-            >
-              <Play className="w-4 h-4" />
-              <span>{isAnimating ? 'Animating...' : 'Animate'}</span>
-            </button>
-          </div>
-          <div ref={displayRef} className="w-80 h-80 mx-auto"></div>
-          <div className="mt-4">
-            <label className="text-sm font-medium text-gray-700">Animation Speed:</label>
-            <input
-              type="range"
-              min="0.5"
-              max="3"
-              step="0.5"
-              value={animationSpeed}
-              onChange={(e) => setAnimationSpeed(Number(e.target.value))}
-              className="w-full mt-2"
+        {/* Canvas Card */}
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 mb-6 transform transition-all duration-300 hover:shadow-3xl">
+          <div className="relative">
+            <canvas
+              ref={canvasRef}
+              style={{
+    cursor: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><line x1=\"8\" y1=\"0\" x2=\"8\" y2=\"16\" stroke=\"black\" stroke-width=\"2\"/><line x1=\"0\" y1=\"8\" x2=\"16\" y2=\"8\" stroke=\"black\" stroke-width=\"2\"/></svg>') 8 8, crosshair"
+  }}
+              className="border-4 border-black rounded-2xl shadow-inner touch-none cursor-crosshai  transition-all duration-200 hover:border-blue-400 mx-auto block"
+              onMouseDown={start}
+              onMouseMove={move}
+              onMouseUp={end}
+              onMouseLeave={end}
+              onTouchStart={start}
+              onTouchMove={move}
+              onTouchEnd={end}
             />
+            {isDrawing && (
+              <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+            )}
           </div>
         </div>
 
-        {/* Practice Canvas */}
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-semibold text-gray-800">Practice Drawing</h3>
-            <div className="flex space-x-2">
-              <button
-                onClick={startPractice}
-                disabled={isPracticing}
-                className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors ${
-                  isPracticing
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
-              >
-                <Target className="w-4 h-4" />
-                <span>{isPracticing ? 'Practicing...' : 'Start Practice'}</span>
-              </button>
-              <button
-                onClick={resetPractice}
-                className="flex items-center space-x-2 px-3 py-2 border rounded-lg hover:bg-gray-50"
-              >
-                <RotateCcw className="w-4 h-4" />
-                <span>Reset</span>
-              </button>
-            </div>
-          </div>
-          <div ref={practiceRef} className="w-80 h-80 mx-auto"></div>
-          {practiceScore !== null && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg text-center">
-              <p className="font-medium">Score: {practiceScore}%</p>
-            </div>
-          )}
+        {/* Action Buttons */}
+        <div className="flex flex-wrap gap-4 justify-center">
+          {/* Clear Button */}
+          <button 
+            onClick={clearCanvas}
+            className="group relative px-8 py-3.5 bg-gradient-to-r from-gray-600 to-gray-700 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 active:scale-95 overflow-hidden"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-gray-700 to-gray-800 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+          </button>
+
+          {/* Save Button */}
+          <button 
+            onClick={save}
+            disabled={isSaving}
+            className="group relative px-8 py-3.5 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 overflow-hidden"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              {isSaving ? (
+                <>
+                  <svg className="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                  Save
+                </>
+              )}
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-red-700 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+          </button>
+
+          {/* Back Button */}
+          <button 
+            onClick={onSelectNewCharacter}
+            className="group relative px-8 py-3.5 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transform transition-all duration-200 hover:scale-105 active:scale-95 overflow-hidden"
+          >
+            <span className="relative z-10 flex items-center gap-2">
+              <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Back
+            </span>
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-700 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left"></div>
+          </button>
         </div>
-      </div>
 
-      {/* Save + Browse */}
-      <div className="flex justify-center space-x-4">
-        <button
-          onClick={saveDrawing}
-          className="flex items-center space-x-2 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-        >
-          <Save className="w-5 h-5" />
-          <span>Save Progress</span>
-        </button>
-        <button
-          onClick={onSelectNewCharacter}
-          className="flex items-center space-x-2 px-6 py-3 border rounded-lg hover:bg-gray-50"
-        >
-          <Shuffle className="w-5 h-5" />
-          <span>Choose New Character</span>
-        </button>
-      </div>
-
-      {/* Tips */}
-      <div className="bg-blue-50 border rounded-lg p-4">
-        <div className="flex items-start space-x-2">
-          <Info className="w-5 h-5 text-blue-600 mt-0.5" />
-          <div>
-            <h4 className="font-medium text-blue-900 mb-1">Tips:</h4>
-            <ul className="text-sm text-blue-700 space-y-1">
-              <li>• Watch the stroke order first</li>
-              <li>• Follow stroke direction carefully</li>
-              <li>• Repeat until it feels natural</li>
-            </ul>
-          </div>
+        {/* Helpful Tips */}
+        <div className="mt-8 bg-gradient-to-r from-blue-50 to-red-50 rounded-2xl p-6 border border-blue-100">
+          <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2">
+            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Tips
+          </h3>
+          <p className="text-sm text-gray-600">Use your mouse or touch screen to practice writing. Clear the canvas to start over, and save your best attempt!</p>
         </div>
       </div>
     </div>
