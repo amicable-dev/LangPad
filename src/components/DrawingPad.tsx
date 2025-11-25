@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from "react";
-import type { Character, DrawingPadProps } from "../types";
+import type { DrawingPadProps } from "../types";
 
 const DrawingPad: React.FC<DrawingPadProps> = ({ 
   selectedCharacter, 

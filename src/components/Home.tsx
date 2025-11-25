@@ -1,4 +1,4 @@
-import React from "react";
+
 import img1 from "../images/chinese1.png";
 import img2 from "../images/chinese2.png";
 import img3 from "../images/chinese3.png";
@@ -12,7 +12,7 @@ export default function Home({ onStart }: { onStart: () => void }) {
       <h1 className="text-4xl font-extrabold text-red-600 mb-2">
         Welcome to LangPad!
       </h1>
-      <p className="text-gray-700 mb-10">
+      <p className="text-white mb-10">
         Learn Chinese characters through fun stroke animations and practice for the very first time!
       </p>
       {/* Button */}

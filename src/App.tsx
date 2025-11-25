@@ -9,7 +9,7 @@ import type { Character, SavedCharacter, ViewType } from "./types";
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<ViewType>("home");
-  const [characters] = useState<Character[]>(ALL_CHARACTERS);
+  const [] = useState<Character[]>(ALL_CHARACTERS);
   const [savedCharacters, setSavedCharacters] = useState<SavedCharacter[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 

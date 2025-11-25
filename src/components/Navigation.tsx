@@ -1,4 +1,4 @@
-import React from "react";
+
 import { Home, Edit, Book, Heart, Settings } from "lucide-react";
 
 const navItems = [
