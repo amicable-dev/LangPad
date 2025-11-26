@@ -13,8 +13,6 @@ const App: React.FC = () => {
   const [savedCharacters, setSavedCharacters] = useState<SavedCharacter[]>([]);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
-  // REMOVED localStorage - now using in-memory state only
-
   const saveCharacter = (character: Character, drawing: string) => {
     const saved: SavedCharacter = {
       ...character,
