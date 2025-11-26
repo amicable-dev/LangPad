@@ -106,27 +106,28 @@ const DrawingPad: React.FC<DrawingPadProps> = ({
         </div>
 
         {/* Canvas Card */}
-        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8 mb-6 transform transition-all duration-300 hover:shadow-3xl">
-          <div className="relative">
-            <canvas
-              ref={canvasRef}
-              style={{
-    cursor: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><line x1=\"8\" y1=\"0\" x2=\"8\" y2=\"16\" stroke=\"black\" stroke-width=\"2\"/><line x1=\"0\" y1=\"8\" x2=\"16\" y2=\"8\" stroke=\"black\" stroke-width=\"2\"/></svg>') 8 8, crosshair"
-  }}
-              className="border-4 border-black rounded-2xl shadow-inner touch-none cursor-crosshai  transition-all duration-200 hover:border-blue-400 mx-auto block"
-              onMouseDown={start}
-              onMouseMove={move}
-              onMouseUp={end}
-              onMouseLeave={end}
-              onTouchStart={start}
-              onTouchMove={move}
-              onTouchEnd={end}
-            />
-            {isDrawing && (
-              <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
-            )}
-          </div>
-        </div>
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 sm:p-6 md:p-8 mb-6 transform transition-all duration-300 hover:shadow-3xl max-w-full">
+  <div className="relative w-full" style={{ aspectRatio: '1 / 1' }}>
+    <canvas
+      ref={canvasRef}
+      className="w-full h-full border-4 border-black rounded-2xl shadow-inner touch-none transition-all duration-200 hover:border-blue-400 block"
+      style={{
+        cursor: "url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><line x1=\"8\" y1=\"0\" x2=\"8\" y2=\"16\" stroke=\"black\" stroke-width=\"2\"/><line x1=\"0\" y1=\"8\" x2=\"16\" y2=\"8\" stroke=\"black\" stroke-width=\"2\"/></svg>') 8 8, crosshair"
+      }}
+      onMouseDown={start}
+      onMouseMove={move}
+      onMouseUp={end}
+      onMouseLeave={end}
+      onTouchStart={start}
+      onTouchMove={move}
+      onTouchEnd={end}
+    />
+    {isDrawing && (
+      <div className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full animate-ping"></div>
+    )}
+  </div>
+</div>
+
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-4 justify-center">
